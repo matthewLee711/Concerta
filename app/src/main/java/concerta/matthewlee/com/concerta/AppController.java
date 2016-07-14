@@ -8,9 +8,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
-/*
-Singleton class allows you to use this app controller anywhere in this application
- */
+//Singleton class purpose.. to use this app controller anywhere in this application
 public class AppController extends Application {
 
     public static final String TAG = AppController.class
