@@ -29,8 +29,8 @@ public class CustomListviewAdapter extends ArrayAdapter<Event> {
 
     ImageLoader imageLoader = AppController.getInstance().getImageLoader();
 
-    public CustomListviewAdapter(Activity context, int resource, int textViewResourceId, ArrayList<Event> objs) {
-        super(context, resource, textViewResourceId, objs);
+    public CustomListviewAdapter(Activity context, int resource, ArrayList<Event> objs) {
+        super(context, resource, objs);
         data = objs;
         mContext = context;
         layoutResourceId = resource;

@@ -1,8 +1,10 @@
 package concerta.matthewlee.com.concerta;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -11,11 +13,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +31,7 @@ import data.CustomListviewAdapter;
 import model.Event;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int PERMISSION_ACCESS_COURSE_LOCATION = 1;
     private CustomListviewAdapter adapter;
     private ArrayList<Event> events = new ArrayList<>();
     private String urlLeft = "https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&dmaId=";
@@ -42,8 +47,28 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Request user location if not active
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.ACCESS_COARSE_LOCATION }, PERMISSION_ACCESS_COURSE_LOCATION);
+        }
+        else if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            //SelfLocator locator = new SelfLocator(this);
+        }
+
+        listView = (ListView) findViewById(R.id.list);
+        adapter = new CustomListviewAdapter(MainActivity.this, R.layout.list_row, events);
+        listView.setAdapter(adapter);
         getEvents("Portland");
 
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if(requestCode == PERMISSION_ACCESS_COURSE_LOCATION) {
+            Toast toast = Toast.makeText(this, "works", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     private void getEvents(String city) {
@@ -62,9 +87,35 @@ public class MainActivity extends AppCompatActivity {
                     JSONArray eventsArray = eventReceived.getJSONArray("events");
 
                     for(int i = 1; i < eventsArray.length(); i++) {
-                        JSONObject event = eventsArray.getJSONObject(i);//grab specific event
-                        //Get artists
+                        JSONObject musicEvent = eventsArray.getJSONObject(i);//grab specific event
+                        //Get concert
+                        String headlinerText = musicEvent.getString("name");
+                        String url = musicEvent.getString("url");
+
+                        //Get date
+                        JSONObject concertObject = musicEvent.getJSONObject("dates");
+                        String date = concertObject.getString("localDate");
+
+                        //Get url image2326
+                        //JSONArray imageArray = jsonObject.getJSONArray("image");
+                        //Get image
+                        //JSONObject imageObject = imageArray.getJSONObject(3)
+                        //Get actual image URL
+
+                        Event event = new Event();
+                        event.setHeadLiner(headlinerText);
+
+                        events.add(event);
                     }
+                    //Clicking on the concert will bring up the information
+                    //Click on city will bring up options. first option current location
+                    //options after are past searches
+                    //searching blank will result in current location
+
+                    //Update view - recycle things properly
+                    adapter.notifyDataSetChanged();
+
+
 
 
 
@@ -85,15 +136,6 @@ public class MainActivity extends AppCompatActivity {
         AppController.getInstance().addToRequestQueue(eventsRequest);
 
     }
-
-
-
-
-
-
-
-
-
 
 
 
